@@ -13,7 +13,7 @@ Provides explorability and overall visualization of the call tree
 and package/module structures."""
 
 setup(
-    name='runsnakerun',
+    name='RunSnakeRun',
     version=version,
     url="http://www.vrplumber.com/programming/runsnakerun/",
     download_url="https://github.com/venthur/snakerunner",
