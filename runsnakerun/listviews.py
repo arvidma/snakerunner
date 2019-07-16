@@ -1,5 +1,5 @@
-import sys
 import logging
+import sys
 from gettext import gettext as _
 
 import wx
@@ -39,6 +39,7 @@ class ColumnDefinition(object):
 
             def getter(function):
                 return getattr(function, attribute, None)
+
             self.get = self.getter = getter
 
 
@@ -53,6 +54,7 @@ class DictColumn(ColumnDefinition):
 
             def getter(function):
                 return function.get(attribute, None)
+
             self.get = self.getter = getter
 
 
@@ -67,14 +69,14 @@ class DataView(wx.ListCtrl):
     indicated_node = None
 
     def __init__(
-        self, parent,
-        id=-1,
-        pos=wx.DefaultPosition, size=wx.DefaultSize,
-        style=wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_VRULES | wx.LC_SINGLE_SEL,
-        validator=wx.DefaultValidator,
-        columns=None,
-        sortOrder=None,
-        name=_("ProfileView"),
+            self, parent,
+            id=-1,
+            pos=wx.DefaultPosition, size=wx.DefaultSize,
+            style=wx.LC_REPORT | wx.LC_VIRTUAL | wx.LC_VRULES | wx.LC_SINGLE_SEL,
+            validator=wx.DefaultValidator,
+            columns=None,
+            sortOrder=None,
+            name=_("ProfileView"),
     ):
         wx.ListCtrl.__init__(self, parent, id, pos, size, style, validator,
                              name)
@@ -134,8 +136,8 @@ class DataView(wx.ListCtrl):
         except AttributeError:
             pass
         except IndexError as err:
-            log.warn(_('Invalid index in node activated: %(index)s'),
-                     index=event.GetIndex())
+            log.warning(_('Invalid index in node activated: %(index)s'),
+                        index=event.GetIndex())
         else:
             wx.PostEvent(
                 self,
@@ -150,8 +152,8 @@ class DataView(wx.ListCtrl):
         except AttributeError:
             pass
         except IndexError as err:
-            log.warn(_('Invalid index in node selected: %(index)s'),
-                     index=event.GetIndex())
+            log.warning(_('Invalid index in node selected: %(index)s'),
+                        index=event.GetIndex())
         else:
             if node is not self.selected_node:
                 wx.PostEvent(
@@ -167,7 +169,7 @@ class DataView(wx.ListCtrl):
             try:
                 node = self.sorted[item]
             except IndexError as err:
-                log.warn(_('Invalid index in mouse move.'))
+                log.warning(_('Invalid index in mouse move.'))
             else:
                 wx.PostEvent(
                     self,
@@ -226,8 +228,8 @@ class DataView(wx.ListCtrl):
                 self.sortOrder[0] = (not self.sortOrder[0][0], column)
             else:
                 self.sortOrder = [
-                    (c.defaultOrder, c) for c in columns
-                ] + [(a, b) for (a, b) in self.sortOrder if b not in columns]
+                                     (c.defaultOrder, c) for c in columns
+                                 ] + [(a, b) for (a, b) in self.sortOrder if b not in columns]
             return False
         else:
             if column is self.sortOrder[0][1]:
@@ -284,9 +286,9 @@ class DataView(wx.ListCtrl):
                 try:
                     return column.format % (value,)
                 except Exception as err:
-                    log.warn('Column %s could not format %r value: %r',
-                             column.name, type(value), value
-                             )
+                    log.warning('Column %s could not format %r value: %r',
+                                column.name, type(value), value
+                                )
                     value = column.get(self.sorted[item])
                     if isinstance(value, str):
                         return value
@@ -317,6 +319,6 @@ class DataView(wx.ListCtrl):
                     try:
                         value = int(config_parser.get(section, width))
                     except ValueError:
-                        log.warn("Unable to restore %s %s", section, width)
+                        log.warning("Unable to restore %s %s", section, width)
                     else:
                         self.SetColumnWidth(i, value)
