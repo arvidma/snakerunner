@@ -8,3 +8,9 @@ dist/
 build/
 *.egg-info/
 *.egg
+
+# Integration test artifacts
+tests/integration/pytest-repo/
+tests/integration/*.profile
+tests/integration/*.png
+tests/integration/.pytest_cache/

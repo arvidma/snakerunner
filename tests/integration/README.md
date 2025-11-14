@@ -1,0 +1,228 @@
+# Snakerunner Integration Tests
+
+This directory contains integration tests for snakerunner that verify the profile visualization system works correctly end-to-end.
+
+## Overview
+
+The integration test suite:
+1. Downloads and uses pytest as a test subject
+2. Runs pytest's own tests with cProfile profiling
+3. Loads the generated profile into snakerunner
+4. Verifies the profile data is correctly parsed and structured
+5. (Optionally) Validates the visual rendering with screenshots
+
+## Test Philosophy
+
+**Why pytest?** Testing pytest's tests with profiling creates a realistic, complex profile with:
+- Thousands of function calls (2,500+ function records)
+- Deep call hierarchies
+- Both Python standard library and third-party code
+- Realistic execution patterns
+
+This provides much better test coverage than synthetic test data.
+
+## Files
+
+- `run_all_tests.sh` - Master script that runs the complete test suite
+- `run_pytest_with_profiling.py` - Generates profile by running pytest tests
+- `test_profile_loading.py` - Tests profile loading without GUI (no wxPython needed)
+- `test_visual_profile.py` - Tests GUI rendering (requires wxPython)
+- `pytest-repo/` - Cloned pytest repository (test subject)
+
+## Running the Tests
+
+### Quick Start
+
+```bash
+./run_all_tests.sh
+```
+
+This runs all tests in sequence. The visual test is skipped if wxPython is not installed.
+
+### Individual Tests
+
+Run just the profile generation:
+```bash
+python3 run_pytest_with_profiling.py
+```
+
+Run just the loading test:
+```bash
+python3 test_profile_loading.py
+```
+
+Run the visual test (requires wxPython and X server):
+```bash
+xvfb-run -a python3 test_visual_profile.py
+```
+
+## Test Details
+
+### Test 1: Profile Generation
+
+**File:** `run_pytest_with_profiling.py`
+
+- Runs a subset of pytest's integration tests
+- Uses Python's built-in cProfile
+- Generates `pytest_tests.profile`
+- Typical profile size: ~400KB, 2,500+ functions, 1-2 seconds execution time
+
+### Test 2: Profile Loading
+
+**File:** `test_profile_loading.py`
+
+Tests without requiring wxPython:
+1. ✓ Profile file loads successfully
+2. ✓ Profile contains expected number of rows (2,500+)
+3. ✓ Root node is created correctly
+4. ✓ Cumulative time is calculated
+5. ✓ Tree structure (parent/child relationships) is valid
+6. ✓ Location view (directory hierarchy) is built
+7. ✓ Sample data looks correct
+8. ✓ pytest-related functions are present in profile
+
+**Dependencies:** None (uses only stdlib and runsnakerun modules)
+
+### Test 3: Visual Rendering (Optional)
+
+**File:** `test_visual_profile.py`
+
+Tests GUI rendering with wxPython:
+1. Loads profile into full wxPython GUI
+2. Captures screenshot of visualization
+3. Validates rendering:
+   - Screenshot is not blank
+   - Has color variety (visualization has colors)
+   - Squaremap area shows content
+   - Profile data loaded correctly
+   - Data structures initialized
+
+**Dependencies:** wxPython, Pillow, Xvfb (for headless)
+
+**Output:** `visual_test_screenshot.png`
+
+## Requirements
+
+### Minimal (for basic tests)
+- Python 3.11+
+- pytest==8.0.0 (installed automatically)
+
+### Full (for visual tests)
+- wxPython 4.2.2+
+- Pillow
+- Xvfb (for headless GUI testing)
+
+## Expected Output
+
+Successful test run:
+```
+========================================
+Snakerunner Integration Test Suite
+========================================
+
+[1/2] Generating profile from pytest tests...
+----------------------------------------
+Profiling pytest tests...
+Profile saved to: pytest_tests.profile
+
+[2/2] Testing profile loading...
+----------------------------------------
+Test 1: Loading profile...
+✓ PASS: Profile loaded successfully
+
+Test 2: Checking profile data...
+✓ PASS: Loaded 2936 profile rows
+
+...
+
+All tests PASSED!
+
+Profile statistics:
+  - Total function records: 2936
+  - Total execution time: 1.554s
+  - Direct children of root: 2
+  - Location hierarchy items: 22
+```
+
+## How It Works
+
+### Profile Generation Flow
+
+```
+pytest-repo/testing/*.py
+    ↓ (run with cProfile)
+pytest_tests.profile
+    ↓ (load with pstats)
+PStatsLoader
+    ↓ (parse and build tree)
+Profile Tree Structure
+```
+
+### Visual Validation Flow
+
+```
+pytest_tests.profile
+    ↓
+SnakeRunner MainFrame
+    ↓ (render with wxPython)
+Squaremap Visualization
+    ↓ (capture screenshot)
+visual_test_screenshot.png
+    ↓ (analyze pixels)
+Visual Validation Results
+```
+
+## Design Decisions
+
+1. **Why pytest as test subject?**
+   - Well-known, stable codebase
+   - Complex enough to generate interesting profiles
+   - Self-contained (tests its own tests)
+   - Predictable structure
+
+2. **Why separate GUI and non-GUI tests?**
+   - Non-GUI tests can run anywhere (CI/CD friendly)
+   - GUI tests require display server (heavier dependencies)
+   - Profile loading is core functionality, rendering is presentation
+
+3. **Why fuzzy visual validation?**
+   - Exact pixel matching is fragile
+   - We care about "is there content?" not "is this pixel #FF0000?"
+   - Statistical validation (color variety, non-blank ratio) is robust
+
+## Troubleshooting
+
+**Profile generation fails:**
+- Check that pytest is installed: `pip install pytest==8.0.0`
+- Some pytest tests may fail - this is OK, profile is still generated
+
+**Visual test fails:**
+- Ensure wxPython is installed (complex, may need system libraries)
+- Ensure Xvfb is available: `which xvfb-run`
+- Visual test is optional - core functionality tested without it
+
+**Integration test takes too long:**
+- Reduce test scope in `run_pytest_with_profiling.py`
+- Adjust `-k` filter to run fewer tests
+- Profile generation is the slowest part
+
+## Future Improvements
+
+- [ ] Add performance benchmarks (load time, memory usage)
+- [ ] Test with different profile sizes (small, medium, large)
+- [ ] Test edge cases (empty profile, single function, circular calls)
+- [ ] Automated visual regression testing with baseline screenshots
+- [ ] Test multiple Python versions
+- [ ] Add stress tests with very large profiles (100K+ functions)
+
+## Contributing
+
+To add new tests:
+1. Create test script in this directory
+2. Add to `run_all_tests.sh`
+3. Update this README
+4. Ensure tests are self-contained and repeatable
+
+## License
+
+Same as parent project (BSD).

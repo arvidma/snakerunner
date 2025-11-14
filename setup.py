@@ -20,7 +20,7 @@ setup(
     description="GUI Viewer for Python profiling runs",
     author="Mike C. Fletcher",
     author_email="mcfletch@vrplumber.com",
-    python_requires='>=3.14',
+    python_requires='>=3.11',
     install_requires=[
         'wxpython>=4.2.2',
     ],
