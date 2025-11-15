@@ -214,7 +214,8 @@ class MainFrame(wx.Frame):
         self.tabs.AddPage(self.callerListControl, _('Callers'), False)
         self.tabs.AddPage(self.allCallerListControl, _('All Callers'), False)
         self.tabs.AddPage(self.sourceCodeControl, _('Source Code'), False)
-        self.rightSplitter.SetSashSize(10)
+        # SetSashSize removed in wxPython 4.2 - sash size is now automatic
+        # self.rightSplitter.SetSashSize(10)
         # calculate size as proportional value for initial display...
         self.LoadState(config_parser)
         width, height = self.GetSize()
