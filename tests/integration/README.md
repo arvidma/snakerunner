@@ -23,13 +23,15 @@ This provides much better test coverage than synthetic test data.
 
 ## Files
 
-- `setup_tests.sh` - **NEW**: Automated setup script (installs dependencies, clones pytest)
-- `requirements.txt` - **NEW**: Python dependencies for integration tests
+- `setup_tests.sh` - Automated setup script (installs dependencies, clones pytest)
+- `requirements.txt` - Python dependencies for integration tests
 - `run_all_tests.sh` - Master script that runs the complete test suite
 - `run_pytest_with_profiling.py` - Generates profile by running pytest tests (with auto-clone)
-- `generate_sample_profile.py` - **NEW**: Fallback profile generator (no external deps needed)
+- `generate_sample_profile.py` - Fallback profile generator (no external deps needed)
+- `create_placeholder_baseline.py` - Creates placeholder baseline image for visual regression testing
 - `test_profile_loading.py` - Tests profile loading without GUI (no wxPython needed)
 - `test_visual_profile.py` - Tests GUI rendering (requires wxPython)
+- `visual_test_baseline.png` - Baseline reference image (placeholder included, should be replaced with real screenshot)
 - `pytest-repo/` - Cloned pytest repository (test subject, auto-cloned if missing)
 
 ## Quick Start (Recommended)
@@ -274,11 +276,14 @@ Visual Validation Results
 - Profile generation is the slowest part
 
 **Baseline image management:**
-- **First run**: Baseline is automatically created from first screenshot
-- **Update baseline**: Delete `visual_test_baseline.png` and re-run to create new baseline
+- **Placeholder baseline**: A placeholder baseline image is included in the repo
+- **First run**: When you first run visual tests with wxPython, the real baseline will be created
+- **Update baseline**: To update baseline, run `python3 create_placeholder_baseline.py` or delete `visual_test_baseline.png` and re-run visual tests
 - **Compare manually**: Use image diff tools to compare baseline vs screenshot
 - **Diff too sensitive**: Adjust thresholds in `compare_with_baseline()` method
-- **Commit baseline**: The baseline should be committed to git to track visual regressions
+- **Commit baseline**: Real baseline screenshots should be committed to git to track visual regressions across environments
+
+**Important**: The included `visual_test_baseline.png` is a placeholder. After installing wxPython and running visual tests successfully, you should commit the real baseline screenshot to ensure consistent regression testing.
 
 **Understanding baseline comparison results:**
 - SSIM = 1.0: Identical images
@@ -287,16 +292,37 @@ Visual Validation Results
 - SSIM 0.80-0.90: Similar but with noticeable changes
 - SSIM < 0.80: Significant visual differences (likely a regression)
 
+## Creating and Updating Baseline Images
+
+The repository includes a placeholder baseline image. To create a real baseline from your environment:
+
+```bash
+# 1. Install wxPython (may require system libraries)
+pip install wxPython
+
+# 2. Run visual tests to generate a real screenshot
+xvfb-run -a python3 test_visual_profile.py
+
+# 3. The test will replace the placeholder with a real screenshot
+# 4. Commit the new baseline
+git add visual_test_baseline.png
+git commit -m "Update visual test baseline for [your environment]"
+```
+
+**Note**: Different environments (different OS, wxPython versions, font rendering) may produce different baselines. The SSIM threshold accounts for minor differences, but significant visual changes may require baseline updates.
+
 ## Future Improvements
 
 - [ ] Add performance benchmarks (load time, memory usage)
 - [ ] Test with different profile sizes (small, medium, large)
 - [ ] Test edge cases (empty profile, single function, circular calls)
 - [x] Automated visual regression testing with baseline screenshots (DONE)
+- [x] Placeholder baseline image for initial setup (DONE)
 - [ ] Test multiple Python versions
 - [ ] Add stress tests with very large profiles (100K+ functions)
 - [ ] Add command-line flag to force baseline update
 - [ ] Generate HTML report with side-by-side baseline/current/diff images
+- [ ] Support multiple baseline images for different environments (Linux/macOS/Windows)
 
 ## Contributing
 
