@@ -32,7 +32,7 @@ This provides much better test coverage than synthetic test data.
 - `create_real_baseline.py` - Creates real baseline from existing snakerunner screenshot
 - `test_profile_loading.py` - Tests profile loading without GUI (no wxPython needed)
 - `test_visual_profile.py` - Tests GUI rendering (requires wxPython)
-- `visual_test_baseline.png` - Baseline reference image (real snakerunner screenshot, 800x600)
+- `visual_test_baseline.png` - Baseline reference image (**PLACEHOLDER** - requires wxPython to create real baseline)
 - `pytest-repo/` - Cloned pytest repository (test subject, auto-cloned if missing)
 
 ## Quick Start (Recommended)
@@ -277,14 +277,17 @@ Visual Validation Results
 - Profile generation is the slowest part
 
 **Baseline image management:**
-- **Real baseline included**: The repo includes a real baseline created from the project's screenshot.png
-- **Baseline shows**: Actual snakerunner squaremap visualization with real profile data (psycopg2 profiling)
-- **Update baseline**: Run `python3 create_real_baseline.py` to recreate from screenshot.png, or run visual tests with wxPython to capture fresh baseline
-- **Compare manually**: Use image diff tools to compare baseline vs screenshot
-- **Diff too sensitive**: Adjust thresholds in `compare_with_baseline()` method
-- **Environment differences**: Different OS/wxPython versions may produce different rendering - the SSIM threshold (0.90) accounts for this
+- **⚠ PLACEHOLDER INCLUDED**: The repo includes a placeholder baseline that does NOT match test data
+- **Real baseline required**: Visual regression testing requires wxPython to capture actual pytest profile visualization
+- **Profile mismatch**: Tests use `pytest_tests.profile` (pytest/pluggy functions), but without wxPython we cannot render it
+- **Create real baseline**: Install wxPython and run `xvfb-run -a python3 test_visual_profile.py` to capture actual baseline
+- **Why this matters**: Baseline must show the SAME profile data that tests use, otherwise all comparisons will fail
+- **Environment differences**: Different OS/wxPython versions produce different rendering - SSIM threshold (0.90) tolerates minor differences
 
-**Note**: The included baseline was created from the repository's existing screenshot.png (macOS Mojave with Python 3.7). Visual tests on different environments may show variations in font rendering, colors, or layout - this is expected and accounted for in the comparison thresholds.
+**IMPORTANT**: Visual regression testing will NOT work with the placeholder baseline! The placeholder exists only to prevent git errors and document requirements. To enable visual tests:
+1. Install wxPython: `pip install wxPython` (requires system libraries)
+2. Run visual test: `xvfb-run -a python3 test_visual_profile.py`
+3. Commit the generated `visual_test_baseline.png` showing pytest visualization
 
 **Understanding baseline comparison results:**
 - SSIM = 1.0: Identical images
@@ -293,32 +296,54 @@ Visual Validation Results
 - SSIM 0.80-0.90: Similar but with noticeable changes
 - SSIM < 0.80: Significant visual differences (likely a regression)
 
-## Creating and Updating Baseline Images
+## Creating Baseline Images (wxPython Required)
 
-The repository includes a real baseline image created from the project's existing screenshot.png.
+⚠ **The included baseline is a PLACEHOLDER and will NOT work for visual regression testing!**
 
-### Option 1: Recreate from screenshot.png (Recommended)
+### Why Baseline Creation Requires wxPython
+
+Visual regression testing compares screenshots of actual GUI rendering. Without wxPython:
+- Cannot render snakerunner GUI
+- Cannot capture screenshot of pytest profile visualization
+- Cannot create baseline that matches test data
+
+**Critical Profile Data Mismatch:**
+- Tests use: `pytest_tests.profile` (pytest/pluggy/config functions)
+- Placeholder shows: Warning text explaining the problem
+- Repository screenshots: psycopg2 or OpenGL profiling (wrong data!)
+- Result: All visual comparisons will fail without correct baseline
+
+### Creating a Real Baseline
 
 ```bash
-# Uses the existing screenshot.png from the repo
-python3 create_real_baseline.py
-```
-
-This is useful if screenshot.png is updated or if you want to regenerate the baseline at a different size.
-
-### Option 2: Capture from live visual test (Requires wxPython)
-
-```bash
-# 1. Install wxPython (may require system libraries)
+# 1. Install wxPython (requires system libraries like GTK, WebKit)
 pip install wxPython
 
-# 2. Run visual tests to capture a fresh screenshot
+# 2. Install other visual test dependencies
+pip install scikit-image numpy Pillow
+
+# 3. Run visual test to capture baseline from pytest_tests.profile
 xvfb-run -a python3 test_visual_profile.py
 
-# 3. If satisfied with the screenshot, commit it as new baseline
+# 4. Verify the baseline was created successfully
+ls -lh visual_test_baseline.png
+# Should show ~100-200KB image with actual pytest visualization
+
+# 5. Visually inspect the baseline
+# Should show pytest/pluggy functions, not psycopg2 or placeholder text
+
+# 6. Commit the real baseline
 git add visual_test_baseline.png
-git commit -m "Update visual test baseline for [your environment]"
+git commit -m "Add real baseline for pytest profile visualization"
 ```
+
+### If wxPython Installation Fails
+
+wxPython requires system libraries (GTK, WebKit, etc.) and can be difficult to install. If installation fails:
+- **Visual regression testing will not be available**
+- Profile loading tests still work (no wxPython needed)
+- Core functionality is still tested
+- Visual tests are optional but recommended for GUI changes
 
 ### Understanding Environment Differences
 

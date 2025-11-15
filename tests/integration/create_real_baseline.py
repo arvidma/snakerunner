@@ -1,78 +1,81 @@
 #!/usr/bin/env python3
 """
-Create a real baseline image from the existing snakerunner screenshot.
+Create a baseline image for visual regression testing.
 
-This takes the existing screenshot.png from the project root and processes
-it to create a proper baseline image for visual regression testing.
+IMPORTANT: This script creates a baseline from pytest_tests.profile that our
+integration tests actually use. Without wxPython installed, we cannot render
+the actual GUI, so this creates an informative placeholder.
+
+To create a REAL baseline that matches the test profile:
+1. Install wxPython: pip install wxPython
+2. Run: xvfb-run -a python3 test_visual_profile.py
+3. This will capture actual pytest profile visualization
 """
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import os
 
-def create_baseline_from_screenshot(screenshot_path, output_path, target_size=(800, 600)):
-    """Create baseline from existing screenshot"""
-    print(f"Loading screenshot from: {screenshot_path}")
+def create_placeholder_baseline(output_path, target_size=(800, 600)):
+    """Create an informative placeholder baseline"""
 
-    # Load the screenshot
-    img = Image.open(screenshot_path)
-    original_size = img.size
-    print(f"  Original size: {original_size[0]}x{original_size[1]}")
+    # Create image with light gray background
+    img = Image.new('RGB', target_size, color=(240, 240, 240))
+    draw = ImageDraw.Draw(img)
 
-    # Calculate aspect-preserving resize
-    aspect = original_size[0] / original_size[1]
-    if aspect > (target_size[0] / target_size[1]):
-        # Width is limiting factor
-        new_width = target_size[0]
-        new_height = int(new_width / aspect)
-    else:
-        # Height is limiting factor
-        new_height = target_size[1]
-        new_width = int(new_height * aspect)
+    # Draw border
+    border_color = (100, 100, 100)
+    draw.rectangle([2, 2, target_size[0]-2, target_size[1]-2], outline=border_color, width=3)
 
-    print(f"  Resizing to: {new_width}x{new_height}")
+    try:
+        font_large = ImageFont.load_default()
+        font_small = ImageFont.load_default()
+    except:
+        font_large = font_small = None
 
-    # Resize with high quality
-    img_resized = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+    # Warning message
+    messages = [
+        ("PLACEHOLDER BASELINE IMAGE", 40, (180, 0, 0)),
+        ("", 70, (0, 0, 0)),
+        ("This baseline does NOT match pytest_tests.profile used by tests!", 100, (100, 0, 0)),
+        ("", 130, (0, 0, 0)),
+        ("To create a valid baseline:", 160, (0, 0, 0)),
+        ("  1. Install wxPython: pip install wxPython", 190, (50, 50, 50)),
+        ("  2. Run: xvfb-run -a python3 test_visual_profile.py", 220, (50, 50, 50)),
+        ("  3. Commit the generated visual_test_baseline.png", 250, (50, 50, 50)),
+        ("", 280, (0, 0, 0)),
+        ("Why this matters:", 310, (0, 0, 0)),
+        ("  - Tests use pytest_tests.profile (pytest/pluggy functions)", 340, (50, 50, 50)),
+        ("  - Without correct baseline, all visual tests will fail", 370, (50, 50, 50)),
+        ("  - Baseline must show pytest visualization, not other profiles", 400, (50, 50, 50)),
+        ("", 430, (0, 0, 0)),
+        ("This placeholder prevents git errors but should be replaced.", 460, (150, 0, 0)),
+        ("Visual regression testing requires a matching baseline image.", 490, (150, 0, 0)),
+    ]
 
-    # If the resized image is smaller than target, create a canvas and center it
-    if new_width < target_size[0] or new_height < target_size[1]:
-        canvas = Image.new('RGB', target_size, color=(240, 240, 240))
-        offset_x = (target_size[0] - new_width) // 2
-        offset_y = (target_size[1] - new_height) // 2
-        canvas.paste(img_resized, (offset_x, offset_y))
-        img_final = canvas
-    else:
-        img_final = img_resized
+    for text, y, color in messages:
+        if font_small:
+            draw.text((20, y), text, fill=color, font=font_small)
 
-    # Save as baseline
-    img_final.save(output_path, 'PNG', optimize=True)
+    # Save
+    img.save(output_path, 'PNG', optimize=True)
     file_size = os.path.getsize(output_path)
 
-    print(f"\n✓ Created baseline from real screenshot")
-    print(f"  Output: {output_path}")
-    print(f"  Size: {img_final.size[0]}x{img_final.size[1]}")
-    print(f"  File size: {file_size:,} bytes")
-    print(f"\nThis baseline shows actual snakerunner visualization with:")
-    print(f"  - Real squaremap rendering")
-    print(f"  - Actual profile data display")
-    print(f"  - Genuine UI elements and colors")
+    print(f"✓ Created placeholder baseline: {output_path}")
+    print(f"  Size: {target_size[0]}x{target_size[1]}, {file_size:,} bytes")
+    print(f"\n⚠ WARNING: This is a PLACEHOLDER")
+    print(f"  Visual tests will NOT work correctly without a real baseline!")
+    print(f"  Install wxPython and run test_visual_profile.py to create it.")
 
 if __name__ == '__main__':
-    # Paths
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    repo_root = os.path.join(script_dir, '..', '..')
-    screenshot_path = os.path.join(repo_root, 'screenshot.png')
     output_path = os.path.join(script_dir, 'visual_test_baseline.png')
 
-    if not os.path.exists(screenshot_path):
-        print(f"Error: Screenshot not found at {screenshot_path}")
-        print("Please ensure screenshot.png exists in the repository root")
-        exit(1)
+    print("="*70)
+    print("Creating Placeholder Baseline (wxPython required for real baseline)")
+    print("="*70)
+    print()
 
-    print("="*60)
-    print("Creating Real Baseline from Screenshot")
-    print("="*60)
+    create_placeholder_baseline(output_path)
 
-    create_baseline_from_screenshot(screenshot_path, output_path)
-
-    print("\nThis baseline represents real snakerunner output and can be")
-    print("used for visual regression testing to detect UI changes.")
+    print()
+    print("This baseline is a placeholder and should be replaced with a real")
+    print("screenshot from test_visual_profile.py using pytest_tests.profile.")
