@@ -29,9 +29,10 @@ This provides much better test coverage than synthetic test data.
 - `run_pytest_with_profiling.py` - Generates profile by running pytest tests (with auto-clone)
 - `generate_sample_profile.py` - Fallback profile generator (no external deps needed)
 - `create_placeholder_baseline.py` - Creates placeholder baseline image for visual regression testing
+- `create_real_baseline.py` - Creates real baseline from existing snakerunner screenshot
 - `test_profile_loading.py` - Tests profile loading without GUI (no wxPython needed)
 - `test_visual_profile.py` - Tests GUI rendering (requires wxPython)
-- `visual_test_baseline.png` - Baseline reference image (placeholder included, should be replaced with real screenshot)
+- `visual_test_baseline.png` - Baseline reference image (real snakerunner screenshot, 800x600)
 - `pytest-repo/` - Cloned pytest repository (test subject, auto-cloned if missing)
 
 ## Quick Start (Recommended)
@@ -276,14 +277,14 @@ Visual Validation Results
 - Profile generation is the slowest part
 
 **Baseline image management:**
-- **Placeholder baseline**: A placeholder baseline image is included in the repo
-- **First run**: When you first run visual tests with wxPython, the real baseline will be created
-- **Update baseline**: To update baseline, run `python3 create_placeholder_baseline.py` or delete `visual_test_baseline.png` and re-run visual tests
+- **Real baseline included**: The repo includes a real baseline created from the project's screenshot.png
+- **Baseline shows**: Actual snakerunner squaremap visualization with real profile data (psycopg2 profiling)
+- **Update baseline**: Run `python3 create_real_baseline.py` to recreate from screenshot.png, or run visual tests with wxPython to capture fresh baseline
 - **Compare manually**: Use image diff tools to compare baseline vs screenshot
 - **Diff too sensitive**: Adjust thresholds in `compare_with_baseline()` method
-- **Commit baseline**: Real baseline screenshots should be committed to git to track visual regressions across environments
+- **Environment differences**: Different OS/wxPython versions may produce different rendering - the SSIM threshold (0.90) accounts for this
 
-**Important**: The included `visual_test_baseline.png` is a placeholder. After installing wxPython and running visual tests successfully, you should commit the real baseline screenshot to ensure consistent regression testing.
+**Note**: The included baseline was created from the repository's existing screenshot.png (macOS Mojave with Python 3.7). Visual tests on different environments may show variations in font rendering, colors, or layout - this is expected and accounted for in the comparison thresholds.
 
 **Understanding baseline comparison results:**
 - SSIM = 1.0: Identical images
@@ -294,22 +295,40 @@ Visual Validation Results
 
 ## Creating and Updating Baseline Images
 
-The repository includes a placeholder baseline image. To create a real baseline from your environment:
+The repository includes a real baseline image created from the project's existing screenshot.png.
+
+### Option 1: Recreate from screenshot.png (Recommended)
+
+```bash
+# Uses the existing screenshot.png from the repo
+python3 create_real_baseline.py
+```
+
+This is useful if screenshot.png is updated or if you want to regenerate the baseline at a different size.
+
+### Option 2: Capture from live visual test (Requires wxPython)
 
 ```bash
 # 1. Install wxPython (may require system libraries)
 pip install wxPython
 
-# 2. Run visual tests to generate a real screenshot
+# 2. Run visual tests to capture a fresh screenshot
 xvfb-run -a python3 test_visual_profile.py
 
-# 3. The test will replace the placeholder with a real screenshot
-# 4. Commit the new baseline
+# 3. If satisfied with the screenshot, commit it as new baseline
 git add visual_test_baseline.png
 git commit -m "Update visual test baseline for [your environment]"
 ```
 
-**Note**: Different environments (different OS, wxPython versions, font rendering) may produce different baselines. The SSIM threshold accounts for minor differences, but significant visual changes may require baseline updates.
+### Understanding Environment Differences
+
+Different environments produce slightly different rendering:
+- **Font rendering**: Varies between Linux, macOS, Windows
+- **Color management**: Different display profiles affect colors
+- **wxPython versions**: UI element styling changes between versions
+- **Window manager**: Different compositing and antialiasing
+
+The SSIM threshold (0.90) is set to tolerate these minor differences while still catching genuine visual regressions.
 
 ## Future Improvements
 
