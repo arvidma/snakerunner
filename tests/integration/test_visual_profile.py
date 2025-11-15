@@ -3,14 +3,21 @@
 Automated visual testing of snakerunner profile visualization.
 
 This script loads a cProfile file into snakerunner, captures a screenshot,
-and performs basic visual validation of the rendering.
+and performs visual validation including comparison against a baseline reference.
 """
 import os
 import sys
 import time
 import wx
 from PIL import Image
+import numpy as np
 import io
+
+try:
+    from skimage.metrics import structural_similarity as ssim
+    HAS_SSIM = True
+except ImportError:
+    HAS_SSIM = False
 
 # Add runsnakerun to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -21,9 +28,10 @@ from runsnakerun import runsnake
 class VisualTestApp(wx.App):
     """Application for automated visual testing"""
 
-    def __init__(self, profile_path, screenshot_path, *args, **kwargs):
+    def __init__(self, profile_path, screenshot_path, baseline_path, *args, **kwargs):
         self.profile_path = profile_path
         self.screenshot_path = screenshot_path
+        self.baseline_path = baseline_path
         self.test_results = []
         super().__init__(*args, **kwargs)
 
@@ -147,7 +155,126 @@ class VisualTestApp(wx.App):
         else:
             self.test_results.append(('has_data', False, 'No profile data loaded'))
 
+        # Test 6: Baseline comparison
+        self.compare_with_baseline(screenshot)
+
         wx.CallLater(100, self.finish_tests)
+
+    def compare_with_baseline(self, screenshot):
+        """Compare the screenshot against a baseline reference image"""
+        print("\nBaseline Comparison:")
+
+        # Check if baseline exists
+        if not os.path.exists(self.baseline_path):
+            print(f"⚠ No baseline found at {self.baseline_path}")
+            print(f"  Saving current screenshot as baseline for future comparisons")
+            screenshot.save(self.baseline_path)
+            self.test_results.append(('baseline_comparison', True, 'Baseline created (first run)'))
+            return
+
+        # Load baseline
+        try:
+            baseline = Image.open(self.baseline_path)
+        except Exception as e:
+            print(f"✗ FAIL: Could not load baseline: {e}")
+            self.test_results.append(('baseline_comparison', False, f'Failed to load baseline: {e}'))
+            return
+
+        # Check dimensions match
+        if screenshot.size != baseline.size:
+            msg = f'Size mismatch: current {screenshot.size} vs baseline {baseline.size}'
+            print(f"✗ FAIL: {msg}")
+            self.test_results.append(('baseline_comparison', False, msg))
+            return
+
+        # Convert to numpy arrays for comparison
+        screenshot_array = np.array(screenshot)
+        baseline_array = np.array(baseline)
+
+        # Calculate pixel difference
+        diff = np.abs(screenshot_array.astype(float) - baseline_array.astype(float))
+        pixel_diff_mean = np.mean(diff)
+        pixel_diff_max = np.max(diff)
+
+        # Calculate percentage of changed pixels (threshold: more than 10 diff in any channel)
+        changed_pixels = np.any(diff > 10, axis=2)
+        changed_pixel_ratio = np.sum(changed_pixels) / (screenshot.size[0] * screenshot.size[1])
+
+        print(f"  Pixel difference (mean): {pixel_diff_mean:.2f}")
+        print(f"  Pixel difference (max): {pixel_diff_max:.0f}")
+        print(f"  Changed pixels: {changed_pixel_ratio:.2%}")
+
+        # Calculate SSIM if available
+        if HAS_SSIM:
+            try:
+                # SSIM needs grayscale or we calculate per channel
+                ssim_score = ssim(
+                    screenshot_array,
+                    baseline_array,
+                    channel_axis=2,  # RGB channels
+                    data_range=255
+                )
+                print(f"  Structural Similarity (SSIM): {ssim_score:.4f}")
+
+                # SSIM > 0.95 is very similar, > 0.99 is nearly identical
+                if ssim_score > 0.90:
+                    self.test_results.append((
+                        'baseline_comparison',
+                        True,
+                        f'SSIM={ssim_score:.4f}, mean_diff={pixel_diff_mean:.2f}, changed={changed_pixel_ratio:.2%}'
+                    ))
+                elif ssim_score > 0.80:
+                    self.test_results.append((
+                        'baseline_comparison',
+                        True,
+                        f'Similar but with changes: SSIM={ssim_score:.4f}, mean_diff={pixel_diff_mean:.2f}'
+                    ))
+                else:
+                    self.test_results.append((
+                        'baseline_comparison',
+                        False,
+                        f'Significant difference: SSIM={ssim_score:.4f}, mean_diff={pixel_diff_mean:.2f}'
+                    ))
+            except Exception as e:
+                print(f"  Warning: SSIM calculation failed: {e}")
+                # Fall back to simple threshold
+                if pixel_diff_mean < 10 and changed_pixel_ratio < 0.10:
+                    self.test_results.append((
+                        'baseline_comparison',
+                        True,
+                        f'Similar (no SSIM): mean_diff={pixel_diff_mean:.2f}, changed={changed_pixel_ratio:.2%}'
+                    ))
+                else:
+                    self.test_results.append((
+                        'baseline_comparison',
+                        False,
+                        f'Different (no SSIM): mean_diff={pixel_diff_mean:.2f}, changed={changed_pixel_ratio:.2%}'
+                    ))
+        else:
+            # Simple threshold-based comparison
+            print("  (SSIM not available, using simple comparison)")
+            if pixel_diff_mean < 10 and changed_pixel_ratio < 0.10:
+                self.test_results.append((
+                    'baseline_comparison',
+                    True,
+                    f'Similar: mean_diff={pixel_diff_mean:.2f}, changed={changed_pixel_ratio:.2%}'
+                ))
+            else:
+                self.test_results.append((
+                    'baseline_comparison',
+                    False,
+                    f'Different: mean_diff={pixel_diff_mean:.2f}, changed={changed_pixel_ratio:.2%}'
+                ))
+
+        # Save diff image for debugging
+        diff_image_path = self.screenshot_path.replace('.png', '_diff.png')
+        try:
+            # Create a visual diff image
+            diff_visual = np.clip(diff.sum(axis=2) * 5, 0, 255).astype(np.uint8)  # Amplify differences
+            Image.fromarray(diff_visual).save(diff_image_path)
+            print(f"  Diff image saved to: {diff_image_path}")
+        except Exception as e:
+            print(f"  Warning: Could not save diff image: {e}")
 
     def finish_tests(self):
         """Print test results and exit"""
@@ -182,6 +309,7 @@ def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     profile_path = os.path.join(script_dir, 'pytest_tests.profile')
     screenshot_path = os.path.join(script_dir, 'visual_test_screenshot.png')
+    baseline_path = os.path.join(script_dir, 'visual_test_baseline.png')
 
     if not os.path.exists(profile_path):
         print(f"Error: Profile file not found: {profile_path}")
@@ -191,10 +319,13 @@ def main():
     print(f"Starting visual test...")
     print(f"Profile: {profile_path}")
     print(f"Screenshot will be saved to: {screenshot_path}")
+    print(f"Baseline reference: {baseline_path}")
+    if not os.path.exists(baseline_path):
+        print(f"  (No baseline exists yet - will be created on first run)")
     print()
 
     # Create and run the test app
-    app = VisualTestApp(profile_path, screenshot_path)
+    app = VisualTestApp(profile_path, screenshot_path, baseline_path)
     app.MainLoop()
 
 

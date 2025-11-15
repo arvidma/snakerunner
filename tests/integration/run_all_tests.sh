@@ -52,8 +52,10 @@ fi
 echo "========================================"
 echo ""
 echo "Generated files:"
-echo "  - pytest_tests.profile       (cProfile output)"
-echo "  - visual_test_screenshot.png (if visual test ran)"
+echo "  - pytest_tests.profile              (cProfile output)"
+echo "  - visual_test_screenshot.png        (current screenshot, if visual test ran)"
+echo "  - visual_test_baseline.png          (baseline reference, created on first run)"
+echo "  - visual_test_screenshot_diff.png   (visual diff, if baseline exists)"
 echo ""
 
 exit $TEST_EXIT_CODE

@@ -96,10 +96,25 @@ Tests GUI rendering with wxPython:
    - Squaremap area shows content
    - Profile data loaded correctly
    - Data structures initialized
+4. **Baseline comparison** (regression detection):
+   - Compares against reference image (`visual_test_baseline.png`)
+   - Calculates SSIM (Structural Similarity Index) - measures perceptual similarity
+   - Calculates pixel difference metrics (mean, max, changed ratio)
+   - Creates visual diff image highlighting changes
+   - On first run, creates baseline for future comparisons
 
-**Dependencies:** wxPython, Pillow, Xvfb (for headless)
+**Baseline Comparison Metrics:**
+- **SSIM Score**: 0.90-1.00 = Very similar, 0.80-0.90 = Similar with changes, <0.80 = Significant difference
+- **Mean Pixel Diff**: Average color difference per pixel (lower is better)
+- **Changed Pixels**: Percentage of pixels with >10 unit difference in any channel
+- **Diff Image**: Visual representation showing where changes occurred (amplified 5x for visibility)
 
-**Output:** `visual_test_screenshot.png`
+**Dependencies:** wxPython, Pillow, scikit-image (for SSIM), numpy, Xvfb (for headless)
+
+**Output Files:**
+- `visual_test_screenshot.png` - Current screenshot (gitignored)
+- `visual_test_baseline.png` - Reference baseline (committed to git)
+- `visual_test_screenshot_diff.png` - Visual diff highlighting changes (gitignored)
 
 ## Requirements
 
@@ -107,9 +122,11 @@ Tests GUI rendering with wxPython:
 - Python 3.11+
 - pytest==8.0.0 (installed automatically)
 
-### Full (for visual tests)
+### Full (for visual tests with baseline comparison)
 - wxPython 4.2.2+
 - Pillow
+- scikit-image (for SSIM calculation)
+- numpy
 - Xvfb (for headless GUI testing)
 
 ## Expected Output
@@ -206,14 +223,30 @@ Visual Validation Results
 - Adjust `-k` filter to run fewer tests
 - Profile generation is the slowest part
 
+**Baseline image management:**
+- **First run**: Baseline is automatically created from first screenshot
+- **Update baseline**: Delete `visual_test_baseline.png` and re-run to create new baseline
+- **Compare manually**: Use image diff tools to compare baseline vs screenshot
+- **Diff too sensitive**: Adjust thresholds in `compare_with_baseline()` method
+- **Commit baseline**: The baseline should be committed to git to track visual regressions
+
+**Understanding baseline comparison results:**
+- SSIM = 1.0: Identical images
+- SSIM > 0.95: Visually identical (minor antialiasing differences)
+- SSIM 0.90-0.95: Very similar (acceptable variation)
+- SSIM 0.80-0.90: Similar but with noticeable changes
+- SSIM < 0.80: Significant visual differences (likely a regression)
+
 ## Future Improvements
 
 - [ ] Add performance benchmarks (load time, memory usage)
 - [ ] Test with different profile sizes (small, medium, large)
 - [ ] Test edge cases (empty profile, single function, circular calls)
-- [ ] Automated visual regression testing with baseline screenshots
+- [x] Automated visual regression testing with baseline screenshots (DONE)
 - [ ] Test multiple Python versions
 - [ ] Add stress tests with very large profiles (100K+ functions)
+- [ ] Add command-line flag to force baseline update
+- [ ] Generate HTML report with side-by-side baseline/current/diff images
 
 ## Contributing
 

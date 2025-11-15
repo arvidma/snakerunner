@@ -12,5 +12,7 @@ build/
 # Integration test artifacts
 tests/integration/pytest-repo/
 tests/integration/*.profile
-tests/integration/*.png
+tests/integration/visual_test_screenshot.png
+tests/integration/*_diff.png
 tests/integration/.pytest_cache/
+# Note: visual_test_baseline.png is NOT ignored - it should be committed to track regressions
