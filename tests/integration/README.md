@@ -23,15 +23,50 @@ This provides much better test coverage than synthetic test data.
 
 ## Files
 
+- `setup_tests.sh` - **NEW**: Automated setup script (installs dependencies, clones pytest)
+- `requirements.txt` - **NEW**: Python dependencies for integration tests
 - `run_all_tests.sh` - Master script that runs the complete test suite
-- `run_pytest_with_profiling.py` - Generates profile by running pytest tests
+- `run_pytest_with_profiling.py` - Generates profile by running pytest tests (with auto-clone)
+- `generate_sample_profile.py` - **NEW**: Fallback profile generator (no external deps needed)
 - `test_profile_loading.py` - Tests profile loading without GUI (no wxPython needed)
 - `test_visual_profile.py` - Tests GUI rendering (requires wxPython)
-- `pytest-repo/` - Cloned pytest repository (test subject)
+- `pytest-repo/` - Cloned pytest repository (test subject, auto-cloned if missing)
+
+## Quick Start (Recommended)
+
+### Automated Setup
+
+```bash
+# One-command setup - installs all dependencies and clones pytest repo
+./setup_tests.sh
+
+# Then run all tests
+./run_all_tests.sh
+```
+
+The setup script will:
+- Install Python dependencies (pytest, wxPython, etc.)
+- Clone pytest repository for realistic test data
+- Check for system dependencies (Xvfb)
+
+### Manual Setup
+
+If you prefer manual setup:
+
+```bash
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Clone pytest repo (optional - fallback generator used if not present)
+git clone --depth 1 --branch 8.0.0 https://github.com/pytest-dev/pytest.git pytest-repo
+
+# Run tests
+./run_all_tests.sh
+```
 
 ## Running the Tests
 
-### Quick Start
+### Run All Tests
 
 ```bash
 ./run_all_tests.sh
@@ -45,6 +80,7 @@ Run just the profile generation:
 ```bash
 python3 run_pytest_with_profiling.py
 ```
+**Note:** This will automatically clone pytest-repo if needed, or use the fallback generator if cloning fails.
 
 Run just the loading test:
 ```bash
@@ -62,10 +98,24 @@ xvfb-run -a python3 test_visual_profile.py
 
 **File:** `run_pytest_with_profiling.py`
 
-- Runs a subset of pytest's integration tests
+- **Automatically clones pytest-repo** if not present (requires git)
+- **Falls back to `generate_sample_profile.py`** if cloning fails
+- Runs a subset of pytest's integration tests (if using pytest-repo)
 - Uses Python's built-in cProfile
 - Generates `pytest_tests.profile`
 - Typical profile size: ~400KB, 2,500+ functions, 1-2 seconds execution time
+
+**Fallback Generator:** `generate_sample_profile.py`
+
+If pytest-repo cannot be cloned (no git, no network), the fallback generator creates a comprehensive profile by:
+- Executing recursive algorithms (fibonacci)
+- Simulating data processing with deep call hierarchies
+- Performing file I/O operations
+- JSON serialization/deserialization
+- String and path operations
+- Creating realistic nested call stacks
+
+The fallback profile is smaller but still provides good test coverage for snakerunner's visualization.
 
 ### Test 2: Profile Loading
 
