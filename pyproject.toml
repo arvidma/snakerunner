@@ -1,3 +1,47 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
 
+[project]
+name = "RunSnakeRun"
+version = "3.1.0"
+description = "GUI Viewer for Python profiling runs"
+readme = {text = "GUI Viewer for Python profiling runs\n\nProvides explorability and overall visualization of the call tree\nand package/module structures.", content-type = "text/plain"}
+requires-python = ">=3.11"
+license = {text = "BSD"}
+authors = [
+    {name = "Mike C. Fletcher", email = "mcfletch@vrplumber.com"}
+]
+keywords = ["profile", "gui", "wxPython", "squaremap"]
+classifiers = [
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Intended Audience :: Developers",
+]
+dependencies = [
+    "wxpython>=4.2.2",
+]
+
+[project.optional-dependencies]
+coldshot = ["coldshot"]  # Coldshot is a custom profiler that doesn't seem to exist anymore.
+windows = ["pywin32"]
+
+[project.urls]
+Homepage = "http://www.vrplumber.com/programming/runsnakerun/"
+Download = "https://github.com/venthur/snakerunner"
+
+[project.gui-scripts]
+runsnake = "runsnakerun.runsnake:main"
+
+[tool.setuptools]
+zip-safe = false
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = ["tests", "venv"]
+
+[tool.setuptools.package-data]
+runsnakerun = ["resources/*.png"]
