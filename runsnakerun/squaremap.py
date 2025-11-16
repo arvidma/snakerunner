@@ -549,7 +549,7 @@ class TestApp(wx.App):
 
     def OnSquareSelected(self, event):
         text = self.sq.adapter.label(event.node)
-        self.frame.SetToolTipString(text)
+        self.frame.SetToolTip(text)
 
 
 class Node(object):

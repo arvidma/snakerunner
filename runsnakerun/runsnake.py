@@ -214,7 +214,7 @@ class MainFrame(wx.Frame):
         self.tabs.AddPage(self.callerListControl, _('Callers'), False)
         self.tabs.AddPage(self.allCallerListControl, _('All Callers'), False)
         self.tabs.AddPage(self.sourceCodeControl, _('Source Code'), False)
-        self.rightSplitter.SetSashSize(10)
+        # SetSashSize removed - not available in wxPython 4+
         # calculate size as proportional value for initial display...
         self.LoadState(config_parser)
         width, height = self.GetSize()
@@ -325,7 +325,7 @@ class MainFrame(wx.Frame):
         tb.ToolBitmapSize = tsize
         open_bmp = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR,
                                             tsize)
-        tb.AddTool(ID_OPEN, "Open", open_bmp, wx.NullBitmap,
+        tb.AddTool(ID_OPEN, "Open", open_bmp,
                    shortHelp="Open",
                    longHelp="Open a (c)Profile trace file")
         if not osx:
