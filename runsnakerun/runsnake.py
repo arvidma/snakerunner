@@ -325,29 +325,24 @@ class MainFrame(wx.Frame):
         tb.ToolBitmapSize = tsize
         open_bmp = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR,
                                             tsize)
-        tb.AddTool(ID_OPEN, "Open", open_bmp, wx.NullBitmap,
-                   shortHelp="Open",
-                   longHelp="Open a (c)Profile trace file")
+        tb.AddTool(ID_OPEN, "Open", open_bmp, "Open a (c)Profile trace file")
         if not osx:
             tb.AddSeparator()
 #        self.Bind(wx.EVT_TOOL, self.OnOpenFile, id=ID_OPEN)
         self.rootViewTool = tb.AddTool(
             ID_ROOT_VIEW, _("Root View"),
             wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR, tsize),
-            shortHelp=_(
-                "Display the root of the current view tree (home view)")
+            _("Display the root of the current view tree (home view)")
         )
         self.rootViewTool = tb.AddTool(
             ID_BACK_VIEW, _("Back"),
             wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR, tsize),
-            shortHelp=_(
-                "Back to the previously activated node in the call tree")
+            _("Back to the previously activated node in the call tree")
         )
         self.upViewTool = tb.AddTool(
             ID_UP_VIEW, _("Up"),
             wx.ArtProvider.GetBitmap(wx.ART_GO_UP, wx.ART_TOOLBAR, tsize),
-            shortHelp=_(
-                "Go one level up the call tree (highest-percentage parent)")
+            _("Go one level up the call tree (highest-percentage parent)")
         )
         if not osx:
             tb.AddSeparator()
