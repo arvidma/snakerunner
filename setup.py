@@ -20,11 +20,12 @@ setup(
     description="GUI Viewer for Python profiling runs",
     author="Mike C. Fletcher",
     author_email="mcfletch@vrplumber.com",
+    python_requires='>=3.11',
     install_requires=[
-        'wxpython',
+        'wxpython>=4.2.2',
     ],
-    extras_requires={"coldshot": ["coldshot"],  # Coldshot is a custom profiler that doesn't seem to exist anymore.
-                     "windows": ["pywin32"]},
+    extras_require={"coldshot": ["coldshot"],  # Coldshot is a custom profiler that doesn't seem to exist anymore.
+                    "windows": ["pywin32"]},
     license="BSD",
     packages=find_packages(exclude=['tests', "venv",]),
     zip_safe=False,
@@ -35,6 +36,8 @@ setup(
     classifiers=[
         """License :: OSI Approved :: BSD License""",
         """Programming Language :: Python""",
+        """Programming Language :: Python :: 3""",
+        """Programming Language :: Python :: 3.14""",
         """Topic :: Software Development :: Libraries :: Python Modules""",
         """Intended Audience :: Developers""",
     ],

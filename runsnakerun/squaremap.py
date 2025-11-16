@@ -265,7 +265,8 @@ class SquareMap(wx.Panel):
         ''' Return the default GUI font, scaled for printing if necessary. '''
         font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
         scale = dc.GetPPI()[0] / wx.ScreenDC().GetPPI()[0]
-        font.SetPointSize(scale*font.GetPointSize())
+        # wxPython 4.2+ requires int for SetPointSize
+        font.SetPointSize(int(scale*font.GetPointSize()))
         return font
 
     def BrushForNode(self, node, depth=0):
@@ -318,11 +319,13 @@ class SquareMap(wx.Panel):
         if sys.platform == 'darwin':
             # Macs don't like drawing small rounded rects...
             if w < self.padding*2 or h < self.padding*2:
-                dc.DrawRectangle(dx, dy, dw, dh)
+                dc.DrawRectangle(int(dx), int(dy), int(dw), int(dh))
             else:
-                dc.DrawRoundedRectangle(dx, dy, dw, dh, self.padding)
+                # wxPython 4.2+ requires int for DrawRoundedRectangle coordinates
+                dc.DrawRoundedRectangle(int(dx), int(dy), int(dw), int(dh), int(self.padding))
         else:
-            dc.DrawRoundedRectangle(dx, dy, dw, dh, self.padding*3)
+            # wxPython 4.2+ requires int for DrawRoundedRectangle coordinates
+            dc.DrawRoundedRectangle(int(dx), int(dy), int(dw), int(dh), int(self.padding*3))
 #        self.DrawIconAndLabel(dc, node, x, y, w, h, depth)
         children_hot_map = []
         hot_map.append(

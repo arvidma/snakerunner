@@ -1,0 +1,11 @@
+# Integration test dependencies for snakerunner
+# Install with: pip install -r requirements.txt
+
+# Required for all tests
+pytest==8.0.0
+
+# Required for visual tests
+wxPython>=4.2.0
+Pillow>=10.0.0
+numpy>=1.24.0
+scikit-image>=0.21.0  # For SSIM baseline comparison

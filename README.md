@@ -14,8 +14,8 @@ and up to current best practices and standards.
 
 ### Requirements
 
-* Python3
-* wxpython 4
+* Python 3.14+
+* wxPython 4.2.2+
 
 
 ### Modifications since the Fork

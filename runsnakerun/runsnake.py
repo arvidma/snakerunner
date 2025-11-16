@@ -27,20 +27,20 @@ else:
 
 log = logging.getLogger(__name__)
 
-ID_OPEN = wx.NewId()
-ID_EXIT = wx.NewId()
+ID_OPEN = wx.NewIdRef()
+ID_EXIT = wx.NewIdRef()
 
-ID_TREE_TYPE = wx.NewId()
+ID_TREE_TYPE = wx.NewIdRef()
 
-#ID_PACKAGE_VIEW = wx.NewId()
+#ID_PACKAGE_VIEW = wx.NewIdRef()
 
-ID_PERCENTAGE_VIEW = wx.NewId()
-ID_ROOT_VIEW = wx.NewId()
-ID_BACK_VIEW = wx.NewId()
-ID_UP_VIEW = wx.NewId()
-ID_DEEPER_VIEW = wx.NewId()
-ID_SHALLOWER_VIEW = wx.NewId()
-ID_MORE_SQUARE = wx.NewId()
+ID_PERCENTAGE_VIEW = wx.NewIdRef()
+ID_ROOT_VIEW = wx.NewIdRef()
+ID_BACK_VIEW = wx.NewIdRef()
+ID_UP_VIEW = wx.NewIdRef()
+ID_DEEPER_VIEW = wx.NewIdRef()
+ID_SHALLOWER_VIEW = wx.NewIdRef()
+ID_MORE_SQUARE = wx.NewIdRef()
 
 PROFILE_VIEW_COLUMNS = [
     listviews.ColumnDefinition(
@@ -214,7 +214,8 @@ class MainFrame(wx.Frame):
         self.tabs.AddPage(self.callerListControl, _('Callers'), False)
         self.tabs.AddPage(self.allCallerListControl, _('All Callers'), False)
         self.tabs.AddPage(self.sourceCodeControl, _('Source Code'), False)
-        # SetSashSize removed - not available in wxPython 4+
+        # SetSashSize removed in wxPython 4.2 - sash size is now automatic
+        # self.rightSplitter.SetSashSize(10)
         # calculate size as proportional value for initial display...
         self.LoadState(config_parser)
         width, height = self.GetSize()
@@ -696,7 +697,7 @@ class MainFrame(wx.Frame):
         except Exception:
             pass  # use the default, by default
         else:
-            font = wx.SystemSettings_GetFont(wx.SYS_DEFAULT_GUI_FONT)
+            font = wx.SystemSettings.GetFont(wx.SYS_DEFAULT_GUI_FONT)
             font.SetPointSize(font_size)
             for ctrl in self.ProfileListControls:
                 ctrl.SetFont(font)
