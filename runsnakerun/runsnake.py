@@ -27,20 +27,20 @@ else:
 
 log = logging.getLogger(__name__)
 
-ID_OPEN = wx.NewIdRef()
-ID_EXIT = wx.NewIdRef()
+ID_OPEN = wx.NewId()
+ID_EXIT = wx.NewId()
 
-ID_TREE_TYPE = wx.NewIdRef()
+ID_TREE_TYPE = wx.NewId()
 
-#ID_PACKAGE_VIEW = wx.NewIdRef()
+#ID_PACKAGE_VIEW = wx.NewId()
 
-ID_PERCENTAGE_VIEW = wx.NewIdRef()
-ID_ROOT_VIEW = wx.NewIdRef()
-ID_BACK_VIEW = wx.NewIdRef()
-ID_UP_VIEW = wx.NewIdRef()
-ID_DEEPER_VIEW = wx.NewIdRef()
-ID_SHALLOWER_VIEW = wx.NewIdRef()
-ID_MORE_SQUARE = wx.NewIdRef()
+ID_PERCENTAGE_VIEW = wx.NewId()
+ID_ROOT_VIEW = wx.NewId()
+ID_BACK_VIEW = wx.NewId()
+ID_UP_VIEW = wx.NewId()
+ID_DEEPER_VIEW = wx.NewId()
+ID_SHALLOWER_VIEW = wx.NewId()
+ID_MORE_SQUARE = wx.NewId()
 
 PROFILE_VIEW_COLUMNS = [
     listviews.ColumnDefinition(
@@ -326,27 +326,27 @@ class MainFrame(wx.Frame):
         tb.ToolBitmapSize = tsize
         open_bmp = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_TOOLBAR,
                                             tsize)
-        tb.AddTool(ID_OPEN, "Open", open_bmp,
+        tb.AddTool(toolId=ID_OPEN, label="Open", bitmap=open_bmp,
                    shortHelp="Open",
                    longHelp="Open a (c)Profile trace file")
         if not osx:
             tb.AddSeparator()
 #        self.Bind(wx.EVT_TOOL, self.OnOpenFile, id=ID_OPEN)
         self.rootViewTool = tb.AddTool(
-            ID_ROOT_VIEW, _("Root View"),
-            wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR, tsize),
+            toolId=ID_ROOT_VIEW, label=_("Root View"),
+            bitmap=wx.ArtProvider.GetBitmap(wx.ART_GO_HOME, wx.ART_TOOLBAR, tsize),
             shortHelp=_(
                 "Display the root of the current view tree (home view)")
         )
         self.rootViewTool = tb.AddTool(
-            ID_BACK_VIEW, _("Back"),
-            wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR, tsize),
+            toolId=ID_BACK_VIEW, label=_("Back"),
+            bitmap=wx.ArtProvider.GetBitmap(wx.ART_GO_BACK, wx.ART_TOOLBAR, tsize),
             shortHelp=_(
                 "Back to the previously activated node in the call tree")
         )
         self.upViewTool = tb.AddTool(
-            ID_UP_VIEW, _("Up"),
-            wx.ArtProvider.GetBitmap(wx.ART_GO_UP, wx.ART_TOOLBAR, tsize),
+            toolId=ID_UP_VIEW, label=_("Up"),
+            bitmap=wx.ArtProvider.GetBitmap(wx.ART_GO_UP, wx.ART_TOOLBAR, tsize),
             shortHelp=_(
                 "Go one level up the call tree (highest-percentage parent)")
         )
