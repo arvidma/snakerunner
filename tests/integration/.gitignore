@@ -1,0 +1,17 @@
+# Generated profile files
+pytest_tests.profile
+*.profile
+
+# Cloned pytest repository for testing
+pytest-repo/
+
+# Generated screenshots (except baseline)
+visual_test_screenshot.png
+visual_test_screenshot_diff.png
+*_screenshot.png
+*_diff.png
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo

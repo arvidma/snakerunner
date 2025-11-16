@@ -39,6 +39,10 @@ class VisualTestApp(wx.App):
         """Initialize the application and start testing"""
         # Create the main frame
         self.frame = runsnake.MainFrame(config_parser=runsnake.load_config())
+
+        # Set a reasonable window size for screenshots (match typical RunSnakeRun usage)
+        self.frame.SetSize((1440, 900))
+
         self.frame.Show(True)
         self.SetTopWindow(self.frame)
 
@@ -51,8 +55,8 @@ class VisualTestApp(wx.App):
         print(f"Loading profile: {self.profile_path}")
         self.frame.load(self.profile_path)
 
-        # Wait for the UI to update
-        wx.CallLater(1000, self.take_screenshot)
+        # Wait for the UI to update and render fully (increased for large window)
+        wx.CallLater(2000, self.take_screenshot)
 
     def take_screenshot(self):
         """Capture a screenshot of the application"""
